@@ -42,7 +42,13 @@ class PlayerAI(BaseAI):
         You may adjust the input variables as you wish (though it is not necessary). Output has to be (x,y) coordinates.
         
         """
-        pass
+        """ Returns a random, valid move """
+        # find all available moves 
+        available_moves = grid.get_neighbors(self.pos, only_available = True)
+        # make random move
+        new_pos = random.choice(available_moves) if available_moves else None
+
+        return new_pos
 
     def getTrap(self, grid : Grid) -> tuple:
         """ 
@@ -58,7 +64,13 @@ class PlayerAI(BaseAI):
         You may adjust the input variables as you wish (though it is not necessary). Output has to be (x,y) coordinates.
         
         """
-        pass
+        """Get the *intended* trap move of the player"""
+        # find all available cells in the grid
+        available_cells = grid.getAvailableCells()
+        # find all available cells
+        trap = random.choice(available_cells) if available_cells else None
+
+        return trap
         
 
     
