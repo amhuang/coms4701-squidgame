@@ -8,9 +8,7 @@ from Grid import Grid
 from Utils import *
 import math
 
-# TO BE IMPLEMENTED
-# 
-class PlayerAI(BaseAI):
+class MinimaxAI(BaseAI):
 
     def __init__(self) -> None:
         # You may choose to add attributes to your player - up to you!
@@ -124,14 +122,15 @@ class PlayerAI(BaseAI):
         Finds throw by opponent that minimizes utililty
         Utility = Improved Score (IS) heuristic
         """
+
         # Initialize minChild to current state
         minChild = grid
         minUtil = sys.maxsize
-        
+        opponent = grid.find(3 - self.player_num)
+
         # find good trap throwing options 
         # Currently: considering throws at spaces neighboring Max in the curr state
-        opp_pos = grid.find(3 - self.player_num)    # Throwing from
-        pos = grid.find(self.player_num)            # Target
+        pos = grid.find(self.player_num)
         available_neighbors = grid.get_neighbors(pos, only_available = True)
         
         if depth >= 5:
@@ -142,12 +141,8 @@ class PlayerAI(BaseAI):
         # Get state for each trap throw 
         states = [grid.clone().trap(cell) for cell in available_neighbors]
         
-        for i, state in enumerate(states):
-
-            # p = probability of success
+        for state in states:
             _, util = self.maximizeMove(state, depth + 1, alpha, beta)
-            p = 1 - 0.05*(manhattan_distance(opp_pos, available_neighbors[i]) - 1)
-            util *= p
 
             if util < minUtil:
                 minChild = state
@@ -161,21 +156,26 @@ class PlayerAI(BaseAI):
 
         return (minChild, minUtil)
 
-    def chanceMove(self, intended_state: Grid, depth, alpha, beta, target: tuple, source: tuple):
-        """
-        Chance node of expectiminimax algorithm. Gets expected value
-        of utility for one target square (weighted sum of possible places
-        trap could land). Called by minimizeMove()
-
-        target: intended position of trap
-        source: where trap is being thrown from
-        """
-
+    def expectiMove(self, neighbors, grid : Grid, intended_position : tuple):
+        # find neighboring cells
+        neighbors = grid.get_neighbors(intended_position)
+        neighbors = [neighbor for neighbor in neighbors if grid.getCellValue(neighbor) <= 0]
         
+        n = len(neighbors)
+        probs = np.ones(1 + n)
+        # compute probability of success, p
+        p = 1 - 0.05*(manhattan_distance(player.getPosition(), intended_position) - 1)
+
+        probs[0] = p
+        probs[1:] = np.ones(len(neighbors)) * ((1-p)/n)
+
+        # add desired coordinates to neighbors
+        neighbors.insert(0, intended_position)
 
 
-''' get num of available moves '''
+
 def AM(grid : Grid, player_num):
+    ''' get num of available moves '''
     available_moves = grid.get_neighbors(grid.find(player_num), only_available = True)
     return len(available_moves)
 

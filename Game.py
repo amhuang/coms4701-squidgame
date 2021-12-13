@@ -8,11 +8,12 @@ from Utils import *
 import time
 
 from test_players.MediumAI import MediumAI
+from test_players.opponent_minimax import MinimaxAI
 
 PLAYER_TURN, COMPUTER_TURN = 1,2
 
 # Time Limit Before Losing
-timeLimit = 5.0
+timeLimit = 0.5
 allowance = 0.05
 
 class Game():
@@ -229,15 +230,32 @@ class Game():
 def main():
 
     playerAI = PlayerAI() # change this to PlayerAI() to test your player!
-    computerAI = EasyAI() # change this to a more sophisticated player you've coded
+    computerAI = MediumAI() # change this to a more sophisticated player you've coded
     displayer = Displayer()
     game = Game(playerAI = playerAI, computerAI = computerAI, N = 7, displayer=displayer)
-    
+    '''
     result = game.play()
     if result == 1: 
         print("Player 1 wins!")
     elif result == 2:
         print("Player 1 loses!")
+    '''
+
+    # Loop for testing
+    
+    iters = 10
+    wins = 0
+    for i in range(iters):
+        game = Game(playerAI = playerAI, computerAI = computerAI, N = 7, displayer=displayer)
+        result = game.play()
+        if result == 1: 
+            print("PLAYER 1 WINS")
+            wins += 1
+        elif result == 2: 
+            print("PLAYER 1 LOSES")
+
+    print("Wins as player 1:", wins, "/", iters)
+    
 
 if __name__ == "__main__":
     main()
