@@ -156,24 +156,6 @@ class MinimaxAI(BaseAI):
 
         return (minChild, minUtil)
 
-    def expectiMove(self, neighbors, grid : Grid, intended_position : tuple):
-        # find neighboring cells
-        neighbors = grid.get_neighbors(intended_position)
-        neighbors = [neighbor for neighbor in neighbors if grid.getCellValue(neighbor) <= 0]
-        
-        n = len(neighbors)
-        probs = np.ones(1 + n)
-        # compute probability of success, p
-        p = 1 - 0.05*(manhattan_distance(player.getPosition(), intended_position) - 1)
-
-        probs[0] = p
-        probs[1:] = np.ones(len(neighbors)) * ((1-p)/n)
-
-        # add desired coordinates to neighbors
-        neighbors.insert(0, intended_position)
-
-
-
 def AM(grid : Grid, player_num):
     ''' get num of available moves '''
     available_moves = grid.get_neighbors(grid.find(player_num), only_available = True)

@@ -222,11 +222,15 @@ class PlayerAI(BaseAI):
 
         # find all available moves (children)
         pos = grid.find(self.player_num)
+        opp_pos = grid.find(3 - self.player_num)
         available_moves = grid.get_neighbors(pos, only_available = True)
         
-        # Terminate tree, return utility
-        if depth >= 5:
-            maxUtil = AIS(maxChild, self.player_num)
+        # Terminal test
+        player_moves = len(available_moves)
+        opp_moves = len(grid.get_neighbors(opp_pos, only_available = True))
+        
+        if depth >= 5 or player_moves == 0 or opp_moves == 0:
+            maxUtil = IS(maxChild, self.player_num)
             return(maxChild, maxUtil)   
 
         # Get state for each available move 
@@ -263,9 +267,12 @@ class PlayerAI(BaseAI):
         pos = grid.find(self.player_num)            # Target
         available_neighbors = grid.get_neighbors(pos, only_available = True)
         
-        if depth >= 5:
+        # Terminal test
+        player_moves = len(available_neighbors)
+        opp_moves = len(grid.get_neighbors(opp_pos, only_available = True))
+        if depth >= 5 or player_moves == 0 or opp_moves == 0:
             # Terminate tree, return utiliy
-            minUtil = AIS(minChild, self.player_num)
+            minUtil = IS(minChild, self.player_num)
             return(minChild, minUtil)
 
         # Get state for each trap throw 
@@ -289,16 +296,6 @@ class PlayerAI(BaseAI):
                 beta = minUtil
 
         return (minChild, minUtil)
-
-    def chanceMove(self, intended_state: Grid, depth, alpha, beta, target: tuple, source: tuple):
-        """
-        Chance node of expectiminimax algorithm. Gets expected value
-        of utility for one target square (weighted sum of possible places
-        trap could land). Called by minimizeMove()
-
-        target: intended position of trap
-        source: where trap is being thrown from
-        """
 
         
 
