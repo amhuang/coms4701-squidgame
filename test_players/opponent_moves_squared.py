@@ -51,50 +51,29 @@ class PlayerAI(BaseAI):
 
         return new_pos
 
-    def trapUtility(self, grid: Grid) -> int:
-
-        # find all available moves by Player
-        player_moves = grid.get_neighbors(grid.find(self.player_num), only_available = True)
-    
-        # find all available moves by Opponent
-        opp_moves = grid.get_neighbors(grid.find(3 - self.player_num), only_available = True)
-    
-        return len(player_moves) - (len(opp_moves) * 2)
-    
-    def getTrapProbability(self, state: Grid, cell: tuple) -> int:
-
-        player_position = state.find(self.player_num)
-        manhattan = abs(player_position[0] - cell[0]) + abs(player_position[0] - cell[0])
-        p = 1 - .05 * (manhattan - 1)
-
-        return p
-
     def minimizeTrap(self, state : Grid, depth : int, cell : tuple, alpha, beta) -> tuple: 
-
-        pp = state.find(self.player_num)
-        op = state.find(3 - self.player_num)
-
                 
         # terminal test
-        player_moves = len(state.get_neighbors(pp, only_available = True))
-        opp_moves = len(state.get_neighbors(op, only_available = True))
+        player_moves = len(state.get_neighbors(state.find(self.player_num), only_available = True))
+        opp_moves = len(state.get_neighbors(state.find(3 - self.player_num), only_available = True))
 
         if player_moves == 0 or opp_moves == 0:
-            utility = self.trapUtility(state)
+            utility = opp_moves * opp_moves
             return None, utility, cell
         elif depth == 5:
-            utility = self.trapUtility(state)
+            utility = opp_moves * opp_moves
             return None, utility, cell
 
         alpha = alpha
         beta = beta
 
         minChild, minUtility, minCell = None, math.inf, None
-        available_neighbors = state.get_neighbors(op, only_available = True)
-        states = [state.clone().move(cell, 3 - self.player_num) for cell in available_neighbors]
 
-        for i, neighbor in enumerate(states):
-            _, cu, cc = self.maximizeTrap(neighbor, depth + 1, available_neighbors[i], alpha, beta)
+        available_neighbors = state.get_neighbors(state.find(3 - self.player_num), only_available = True)
+        states = [state.clone().trap(cell) for cell in available_neighbors]
+
+        for neighbor in states:
+            _, cu, cc = self.maximizeTrap(neighbor, depth + 1, available_neighbors[states.index(neighbor)], alpha, beta)
 
             if cu < minUtility:
                 minChild, minUtility, minCell = neighbor, cu, cc
@@ -108,73 +87,27 @@ class PlayerAI(BaseAI):
 
         return minChild, minUtility, minCell
 
-
     
     def maximizeTrap(self, state : Grid, depth : int, cell : tuple, alpha, beta) -> tuple:
 
-        pp = state.find(self.player_num)
-        op = state.find(3 - self.player_num)
-
         # terminal test
-        player_moves = len(state.get_neighbors(pp, only_available = True))
-        opp_moves = len(state.get_neighbors(op, only_available = True))
+        player_moves = len(state.get_neighbors(state.find(self.player_num), only_available = True))
+        opp_moves = len(state.get_neighbors(state.find(3 - self.player_num), only_available = True))
         
         if opp_moves == 0 or player_moves == 0:
-            utility = self.trapUtility(state)
+            utility = opp_moves * opp_moves
             return None, utility, cell
         elif depth == 5: 
-            utility = self.trapUtility(state)
+            utility = opp_moves * opp_moves
             return None, utility, cell
 
         maxChild, maxUtility, maxCell = None, -math.inf, None
-        all_available = state.getAvailableCells()
-        available_neighbors = state.get_neighbors(op, only_available = True)
-
-        alpha = alpha
-        beta = beta
-
-        #diagonals
-        i = op[0]
-        j = op[1]
-        while i <= 6 and j <= 6:
-            c = [i, j]
-            if c in all_available and c not in available_neighbors:
-                available_neighbors.append(c)
-            i += 1
-            j += 1
-        i = op[0]
-        j = op[1]
-        while i <= 6 and j >= 0:
-            c = [i, j]
-            if c in all_available and c not in available_neighbors:
-                available_neighbors.append(c)
-            i += 1
-            j -= 1
-        i = op[0]
-        j = op[1]
-        while j <= 6 and i >= 0:
-            c = [i, j]
-            if c in all_available and c not in available_neighbors:
-                available_neighbors.append(c)
-            j += 1
-            i -= 1
-        i = op[0]
-        j = op[1]
-        while i >= 0 and j >= 0:
-            c = [i, j]
-            if c in all_available and c not in available_neighbors:
-                available_neighbors.append(c)
-            j -= 1
-            i -= 1
-        
- 
+        available_neighbors = state.get_neighbors(state.find(3 - self.player_num), only_available = True)
         states = [state.clone().trap(cell) for cell in available_neighbors]
-        
 
 
-        for i, neighbor in enumerate(states):
-            _, cu, cc = self.minimizeTrap(neighbor, depth + 1, available_neighbors[i], alpha, beta)
-            cu = cu * self.getTrapProbability(state, cc)
+        for neighbor in states:
+            _, cu, cc = self.minimizeTrap(neighbor, depth + 1, available_neighbors[states.index(neighbor)], alpha, beta)
 
             if cu > maxUtility:
                 maxChild, maxUtility, maxCell = neighbor, cu, cc
@@ -182,12 +115,11 @@ class PlayerAI(BaseAI):
             if maxUtility >= beta:
                 break 
 
-            if maxUtility > alpha:
+            if maxUtility >= alpha:
                 alpha = maxUtility
 
         return maxChild, maxUtility, maxCell
 
-   
     def getTrap(self, grid : Grid) -> tuple:
         """ 
         YOUR CODE GOES HERE
@@ -209,19 +141,7 @@ class PlayerAI(BaseAI):
     
         ms, mu, trap = self.maximizeTrap(grid, 0, None, alpha, beta)
 
-        if trap == None:
-            # find all available moves 
-            available_moves = grid.getAvailableCells()
-            # make random move
-            trap = random.choice(available_moves) 
+        #address the edge case
         
     
         return trap
-
-
-
-
-
-        
-
-    
