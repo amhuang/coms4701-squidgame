@@ -138,7 +138,7 @@ class PlayerAI(BaseAI):
         j = op[1]
         while i <= 6 and j <= 6:
             c = [i, j]
-            if c in all_available and c not in available_neighbors:
+            if c in all_available and c not in available_neighbors and c != op and c != pp:
                 available_neighbors.append(c)
             i += 1
             j += 1
@@ -146,7 +146,7 @@ class PlayerAI(BaseAI):
         j = op[1]
         while i <= 6 and j >= 0:
             c = [i, j]
-            if c in all_available and c not in available_neighbors:
+            if c in all_available and c not in available_neighbors and c != op and c != pp:
                 available_neighbors.append(c)
             i += 1
             j -= 1
@@ -154,7 +154,7 @@ class PlayerAI(BaseAI):
         j = op[1]
         while j <= 6 and i >= 0:
             c = [i, j]
-            if c in all_available and c not in available_neighbors:
+            if c in all_available and c not in available_neighbors and c != op and c != pp:
                 available_neighbors.append(c)
             j += 1
             i -= 1
@@ -162,7 +162,7 @@ class PlayerAI(BaseAI):
         j = op[1]
         while i >= 0 and j >= 0:
             c = [i, j]
-            if c in all_available and c not in available_neighbors:
+            if c in all_available and c not in available_neighbors and c != op and c != pp:
                 available_neighbors.append(c)
             j -= 1
             i -= 1
