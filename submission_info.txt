@@ -1,0 +1,11 @@
+TEAM MEMBERS:
+
+Andrea Huang
+UNI: amh2341
+Contribution: Coded getMove() maximize move and minimize move functions
+to implement expectiminimax, reachability heuristic, and opponent_minimax.py
+
+Sophia Qureshi
+UNI: swq2101
+Contribution: Coded getTrap() maximize move and minimize move functions
+to implement expectiminimax, trap heuristic, and opponent_moves_squared.py

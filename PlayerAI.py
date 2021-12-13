@@ -43,7 +43,7 @@ class PlayerAI(BaseAI):
     def getTrapProbability(self, state: Grid, cell: tuple) -> int:
 
         player_position = state.find(self.player_num)
-        manhattan = abs(player_position[0] - cell[0]) + abs(player_position[0] - cell[0])
+        manhattan = manhattan_distance(player_position, cell)
         p = 1 - .05 * (manhattan - 1)
 
         return p
@@ -52,17 +52,16 @@ class PlayerAI(BaseAI):
 
         pp = state.find(self.player_num)
         op = state.find(3 - self.player_num)
-
                 
         # terminal test
         player_moves = len(state.get_neighbors(pp, only_available = True))
         opp_moves = len(state.get_neighbors(op, only_available = True))
 
         if player_moves == 0 or opp_moves == 0:
-            utility = self.trapUtility(state)
+            utility = reachable_utility(state, self.player_num)
             return None, utility, cell
         elif depth == 5:
-            utility = self.trapUtility(state)
+            utility = reachable_utility(state, self.player_num)
             return None, utility, cell
 
         alpha = alpha
@@ -88,7 +87,6 @@ class PlayerAI(BaseAI):
         return minChild, minUtility, minCell
 
 
-    
     def maximizeTrap(self, state : Grid, depth : int, cell : tuple, alpha, beta) -> tuple:
 
         pp = state.find(self.player_num)
@@ -99,10 +97,10 @@ class PlayerAI(BaseAI):
         opp_moves = len(state.get_neighbors(op, only_available = True))
         
         if opp_moves == 0 or player_moves == 0:
-            utility = self.trapUtility(state)
+            utility = reachable_utility(state, self.player_num)
             return None, utility, cell
         elif depth == 5: 
-            utility = self.trapUtility(state)
+            utility = reachable_utility(state, self.player_num)
             return None, utility, cell
 
         maxChild, maxUtility, maxCell = None, -math.inf, None
@@ -146,10 +144,7 @@ class PlayerAI(BaseAI):
             j -= 1
             i -= 1
         
- 
         states = [state.clone().trap(cell) for cell in available_neighbors]
-        
-
 
         for i, neighbor in enumerate(states):
             _, cu, cc = self.minimizeTrap(neighbor, depth + 1, available_neighbors[i], alpha, beta)
@@ -190,7 +185,6 @@ class PlayerAI(BaseAI):
             available_moves = grid.getAvailableCells()
             # make random move
             trap = random.choice(available_moves) 
-        
     
         return trap
 
@@ -328,7 +322,7 @@ def AIS(grid : Grid, player_num):
     opp_moves = grid.get_neighbors(grid.find(3 - player_num), only_available = True)
     return len(player_moves) - 2 * len(opp_moves)
 
-def reachable_dfs(grid, pos):
+def reachable_dfs(grid: Grid, pos):
     count = 0
     if grid.map[pos] == 0:
         grid.map[pos] = -2
@@ -344,7 +338,11 @@ def reachable_dfs(grid, pos):
     return count
     
 def reachable_utility(grid: Grid, player_num):
-    
+    """
+    Heuristic: difference between number of reachable squares from
+    own position and number of reachable squares from opponent's 
+    position
+    """
     clone = grid.clone()
     player_moves = reachable_dfs(clone, grid.find(player_num))
 
