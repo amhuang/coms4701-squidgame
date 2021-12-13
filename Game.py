@@ -13,7 +13,7 @@ from test_players.opponent_minimax import MinimaxAI
 PLAYER_TURN, COMPUTER_TURN = 1,2
 
 # Time Limit Before Losing
-timeLimit = 1
+timeLimit = 2
 allowance = 0.05
 
 class Game():

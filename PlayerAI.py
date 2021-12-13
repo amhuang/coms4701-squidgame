@@ -30,23 +30,6 @@ class PlayerAI(BaseAI):
     def setPlayerNum(self, num):
         self.player_num = num
 
-    def getMove(self, grid: Grid) -> tuple:
-        """ 
-        The function should return a tuple of (x,y) coordinates to which the player moves.
-
-        It should be the result of the ExpectiMinimax algorithm, maximizing over the Opponent's *Trap* actions, 
-        taking into account the probabilities of them landing in the positions you believe they'd throw to.
-
-        Note that you are not required to account for the probabilities of it landing in a different cell.
-
-        You may adjust the input variables as you wish (though it is not necessary). Output has to be (x,y) coordinates.
-        """
-        
-        """ Moves based on available moves """
-        max_grid, max_util = self.maximizeMove(grid, 0, -(sys.maxsize), sys.maxsize)
-        new_pos = max_grid.find(self.player_num)
-        return new_pos
-
     def trapUtility(self, grid: Grid) -> int:
 
         # find all available moves by Player
@@ -230,7 +213,7 @@ class PlayerAI(BaseAI):
         opp_moves = len(grid.get_neighbors(opp_pos, only_available = True))
         
         if depth >= 5 or player_moves == 0 or opp_moves == 0:
-            maxUtil = IS(maxChild, self.player_num)
+            maxUtil = reachable_utility(maxChild, self.player_num)
             return(maxChild, maxUtil)   
 
         # Get state for each available move 
@@ -272,7 +255,7 @@ class PlayerAI(BaseAI):
         opp_moves = len(grid.get_neighbors(opp_pos, only_available = True))
         if depth >= 5 or player_moves == 0 or opp_moves == 0:
             # Terminate tree, return utiliy
-            minUtil = IS(minChild, self.player_num)
+            minUtil = reachable_utility(minChild, self.player_num)
             return(minChild, minUtil)
 
         # Get state for each trap throw 
@@ -297,9 +280,28 @@ class PlayerAI(BaseAI):
 
         return (minChild, minUtil)
 
+    def getMove(self, grid: Grid) -> tuple:
+        """ 
+        The function should return a tuple of (x,y) coordinates to which the player moves.
 
-''' get num of available moves '''
+        It should be the result of the ExpectiMinimax algorithm, maximizing over the Opponent's *Trap* actions, 
+        taking into account the probabilities of them landing in the positions you believe they'd throw to.
+
+        Note that you are not required to account for the probabilities of it landing in a different cell.
+
+        You may adjust the input variables as you wish (though it is not necessary). Output has to be (x,y) coordinates.
+        """
+        
+        """ Moves based on available moves """
+
+        max_grid, max_util = self.maximizeMove(grid, 0, -(sys.maxsize), sys.maxsize)
+        new_pos = max_grid.find(self.player_num)
+        reachable_utility(grid, self.player_num)
+        return new_pos
+
+
 def AM(grid : Grid, player_num):
+    ''' get num of available moves '''
     available_moves = grid.get_neighbors(grid.find(player_num), only_available = True)
     return len(available_moves)
 
@@ -325,3 +327,29 @@ def AIS(grid : Grid, player_num):
     # find all available moves by Opponent
     opp_moves = grid.get_neighbors(grid.find(3 - player_num), only_available = True)
     return len(player_moves) - 2 * len(opp_moves)
+
+def reachable_dfs(grid, pos):
+    count = 0
+    if grid.map[pos] == 0:
+        grid.map[pos] = -2
+        count += 1
+
+    moves = grid.get_neighbors(pos, only_available = True)
+    if len(moves) == 0:
+        return count
+   
+    for move in moves:
+        count += reachable_dfs(grid, move)
+    
+    return count
+    
+def reachable_utility(grid: Grid, player_num):
+    
+    clone = grid.clone()
+    player_moves = reachable_dfs(clone, grid.find(player_num))
+
+    # find all available moves by Opponent
+    clone = grid.clone()
+    opp_moves = reachable_dfs(clone, grid.find(3 - player_num))
+    
+    return player_moves - opp_moves
